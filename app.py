@@ -120,16 +120,21 @@ def generate_mission():
     content = re.sub(r"^```(?:json)?\s*", "", content)
     content = re.sub(r"\s*```$", "", content)
 
+    app.logger.warning("Content before JSON parsing: %r", content)
+
     if not content:
         raise ValueError("OpenRouter returned an empty AI response.")
 
     try:
         data = json.loads(content)
-    except json.JSONDecodeError:
+
+    except json.JSONDecodeError as error:
         app.logger.error(
-        "Invalid AI response: %s",
-        content[:500]
-    )
+            "JSON parsing failed: %s | Content: %r",
+            error,
+            content[:500]
+        )
+        raise ValueError("The AI returned invalid JSON.")
     raise ValueError("The AI returned invalid JSON.")
 
     if not isinstance(data, dict):
