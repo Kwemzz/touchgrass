@@ -1,14 +1,20 @@
 
 from flask import Flask, render_template, jsonify
 from ollama import chat
+import requests
+import os
 import json
 import re
 
 app = Flask(__name__)
 
+AI_PROVIDER = os.getenv("AI_PROVIDER", "ollama").lower()
+OPENROUTER_MODEL = os.getenv(
+    "OPENROUTER_MODEL",
+    "qwen/qwen3.8-27b:free"
+)
 
-def generate_mission():
-    prompt = """
+PROMPT = """
 You are TouchGrass, an AI outdoor mission generator.
 
 Create one safe, fun outdoor mission for one person.
@@ -20,9 +26,11 @@ Rules:
 - Do not ask the user to use a phone during the mission.
 - No photos, internet, social media, or special equipment.
 - Do not touch, pick, collect, eat, or damage living things.
+- Stay in safe, accessible public or familiar areas.
+- Avoid roads, climbing, unsafe terrain, and strangers.
 - The person should observe their surroundings.
 - Return exactly 3 short instructions.
-- Choose a random-sounding, engaging mission.
+- Choose a varied, engaging mission.
 - Points must be between 10 and 50.
 
 Return ONLY valid JSON in this format:
@@ -34,38 +42,106 @@ Return ONLY valid JSON in this format:
 }
 """
 
+
+def generate_with_ollama():
     response = chat(
         model="qwen2.5:1.5b",
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "user", "content": PROMPT}
+        ],
         format="json",
         options={"temperature": 0.8}
     )
 
-    content = response["message"]["content"].strip()
+    return response["message"]["content"]
 
-    # Handle code fences if the model returns them.
+
+def generate_with_openrouter():
+    api_key = os.getenv("OPENROUTER_API_KEY")
+
+    if not api_key:
+        raise ValueError("OPENROUTER_API_KEY is missing.")
+
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        },
+        json={
+            "model": OPENROUTER_MODEL,
+            "messages": [
+                {"role": "user", "content": PROMPT}
+            ],
+            "temperature": 0.8,
+            "max_tokens": 500,
+            "response_format": {
+                "type": "json_object"
+            }
+        },
+        timeout=60
+    )
+
+    response.raise_for_status()
+
+    result = response.json()
+    return result["choices"][0]["message"]["content"]
+
+
+def generate_mission():
+    if AI_PROVIDER == "ollama":
+        content = generate_with_ollama()
+
+    elif AI_PROVIDER == "openrouter":
+        content = generate_with_openrouter()
+
+    else:
+        raise ValueError("Invalid AI_PROVIDER configuration.")
+
+    content = content.strip()
+
+    # Remove markdown code fences if present
     content = re.sub(r"^```(?:json)?\s*", "", content)
     content = re.sub(r"\s*```$", "", content)
 
     data = json.loads(content)
 
-    # Validate the result before sending it to the website.
-    if not isinstance(data.get("mission"), str) or not data["mission"].strip():
-        raise ValueError("The AI returned an invalid mission.")
+    if not isinstance(data, dict):
+        raise ValueError("Invalid AI response.")
 
+    mission = data.get("mission")
     instructions = data.get("instructions")
-    if not isinstance(instructions, list) or len(instructions) < 3:
-        raise ValueError("The AI returned insufficient instructions.")
 
-    data["instructions"] = instructions[:3]
+    if not isinstance(mission, str) or not mission.strip():
+        raise ValueError("Invalid mission title.")
+
+    if (
+        not isinstance(instructions, list)
+        or len(instructions) != 3
+        or any(
+            not isinstance(step, str) or not step.strip()
+            for step in instructions
+        )
+    ):
+        raise ValueError("Invalid mission instructions.")
 
     points = data.get("points")
-    if not isinstance(points, int) or isinstance(points, bool) or not 10 <= points <= 50:
-        data["points"] = 20
 
-    data["time_minutes"] = 10
+    if (
+        not isinstance(points, int)
+        or isinstance(points, bool)
+        or not 10 <= points <= 50
+    ):
+        points = 20
 
-    return data
+    return {
+        "mission": mission.strip(),
+        "instructions": [
+            step.strip() for step in instructions
+        ],
+        "time_minutes": 10,
+        "points": points
+    }
 
 
 @app.route("/")
@@ -77,10 +153,12 @@ def home():
 def mission():
     try:
         return jsonify(generate_mission())
-    except Exception as error:
+
+    except Exception:
         app.logger.exception("Mission generation failed")
+
         return jsonify({
-            "error": "Could not generate a mission. Check that Ollama is running and Qwen is installed."
+            "error": "Could not generate a mission. Please try again."
         }), 503
 
 
