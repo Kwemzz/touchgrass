@@ -5,14 +5,13 @@ import requests
 import os
 import json
 import re
+import random
 
 app = Flask(__name__)
 
+# AI configuration
 AI_PROVIDER = os.getenv("AI_PROVIDER", "ollama").lower()
-OPENROUTER_MODEL = os.getenv(
-    "OPENROUTER_MODEL",
-    "qwen/qwen3.8-27b:free"
-)
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "openrouter/free")
 
 PROMPT = """
 You are TouchGrass, an AI outdoor mission generator.
@@ -20,29 +19,101 @@ You are TouchGrass, an AI outdoor mission generator.
 Create one safe, fun outdoor mission for one person.
 
 Rules:
-- It must take about 10 minutes.
+- The mission should take about 10 minutes.
 - It must work in an ordinary outdoor area.
 - Do not assume a particular location exists.
-- Do not ask the user to use a phone during the mission.
-- No photos, internet, social media, or special equipment.
+- No photos, internet, social media, or equipment.
+- Do not ask users to use their phones outdoors.
 - Do not touch, pick, collect, eat, or damage living things.
-- Stay in safe, accessible public or familiar areas.
-- Avoid roads, climbing, unsafe terrain, and strangers.
-- The person should observe their surroundings.
-- Return exactly 3 short instructions.
-- Choose a varied, engaging mission.
+- Avoid roads, climbing, unsafe areas, and strangers.
+- Focus on observing nature and surroundings.
+- Give exactly 3 short instructions.
 - Points must be between 10 and 50.
 
-Return ONLY valid JSON in this format:
+Return ONLY valid JSON:
 {
-  "mission": "One short sentence",
-  "instructions": ["Step one", "Step two", "Step three"],
-  "time_minutes": 10,
-  "points": 20
+    "mission": "A short mission title",
+    "instructions": [
+        "First instruction",
+        "Second instruction",
+        "Third instruction"
+    ],
+    "time_minutes": 10,
+    "points": 20
 }
 """
 
 
+# Backup missions if hosted AI fails
+FALLBACK_MISSIONS = [
+    {
+        "mission": "Discover the sounds around you.",
+        "instructions": [
+            "Find a safe and peaceful outdoor spot.",
+            "Listen for three different sounds.",
+            "Notice which sound you enjoy the most."
+        ],
+        "time_minutes": 10,
+        "points": 20
+    },
+    {
+        "mission": "Explore the colours of nature.",
+        "instructions": [
+            "Step outside and observe your surroundings.",
+            "Find five different colours around you.",
+            "Notice where each colour appears naturally."
+        ],
+        "time_minutes": 10,
+        "points": 25
+    },
+    {
+        "mission": "Go on a texture hunt.",
+        "instructions": [
+            "Walk around a safe outdoor area.",
+            "Find three different textures without touching anything.",
+            "Compare the patterns and shapes you notice."
+        ],
+        "time_minutes": 10,
+        "points": 30
+    },
+    {
+        "mission": "Discover patterns outdoors.",
+        "instructions": [
+            "Look for repeating shapes in your surroundings.",
+            "Identify three interesting patterns.",
+            "Choose your favourite pattern and observe it."
+        ],
+        "time_minutes": 10,
+        "points": 20
+    },
+    {
+        "mission": "Find beauty in the little things.",
+        "instructions": [
+            "Take a slow walk in a familiar outdoor area.",
+            "Notice three small details you usually overlook.",
+            "Spend a moment appreciating your favourite discovery."
+        ],
+        "time_minutes": 10,
+        "points": 25
+    },
+    {
+        "mission": "Explore the shapes around you.",
+        "instructions": [
+            "Find a safe place to observe your surroundings.",
+            "Spot three different shapes in nature.",
+            "Compare how these shapes appear in different objects."
+        ],
+        "time_minutes": 10,
+        "points": 30
+    }
+]
+
+
+def fallback_mission():
+    return random.choice(FALLBACK_MISSIONS)
+
+
+# Generate using local Ollama
 def generate_with_ollama():
     response = chat(
         model="qwen2.5:1.5b",
@@ -56,6 +127,7 @@ def generate_with_ollama():
     return response["message"]["content"]
 
 
+# Generate using hosted OpenRouter
 def generate_with_openrouter():
     api_key = os.getenv("OPENROUTER_API_KEY")
 
@@ -73,20 +145,20 @@ def generate_with_openrouter():
             "messages": [
                 {"role": "user", "content": PROMPT}
             ],
-            "temperature": 0.8,
+            "temperature": 0.7,
             "max_tokens": 1200,
             "response_format": {
                 "type": "json_object"
             }
         },
-        timeout=60
+        timeout=25
     )
 
     if not response.ok:
         app.logger.error(
-            "OpenRouter error %s: %s",
+            "OpenRouter HTTP error %s: %s",
             response.status_code,
-            response.text[:1000]
+            response.text[:500]
         )
         response.raise_for_status()
 
@@ -94,17 +166,12 @@ def generate_with_openrouter():
 
     message = result["choices"][0]["message"]
 
-    app.logger.warning(
-    "OpenRouter model: %s | finish_reason: %s | content: %r",
-    result.get("model"),
-    result["choices"][0].get("finish_reason"),
-    message.get("content")
-)
-
     return message.get("content") or ""
 
 
+# Generate and validate a mission
 def generate_mission():
+
     if AI_PROVIDER == "ollama":
         content = generate_with_ollama()
 
@@ -112,36 +179,36 @@ def generate_mission():
         content = generate_with_openrouter()
 
     else:
-        raise ValueError("Invalid AI_PROVIDER configuration.")
+        raise ValueError("Invalid AI_PROVIDER setting.")
+
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError("AI returned empty content.")
 
     content = content.strip()
 
-    # Remove markdown code fences if present
+    # Remove Markdown code fences
     content = re.sub(r"^```(?:json)?\s*", "", content)
     content = re.sub(r"\s*```$", "", content)
 
-    app.logger.warning("Content before JSON parsing: %r", content)
-
-    if not content:
-        raise ValueError("OpenRouter returned an empty AI response.")
-
+    # Parse JSON
     try:
         data = json.loads(content)
+    except json.JSONDecodeError:
+        # Some models include explanations around the JSON
+        match = re.search(r"\{.*\}", content, re.DOTALL)
 
-    except json.JSONDecodeError as error:
-        app.logger.error(
-            "JSON parsing failed: %s | Content: %r",
-            error,
-            content[:500]
-        )
-        raise ValueError("The AI returned invalid JSON.")
-    raise ValueError("The AI returned invalid JSON.")
+        if not match:
+            raise ValueError("AI did not return JSON.")
 
+        data = json.loads(match.group())
+
+    # Validate mission
     if not isinstance(data, dict):
-        raise ValueError("Invalid AI response.")
+        raise ValueError("Invalid mission data.")
 
     mission = data.get("mission")
     instructions = data.get("instructions")
+    points = data.get("points")
 
     if not isinstance(mission, str) or not mission.strip():
         raise ValueError("Invalid mission title.")
@@ -155,8 +222,6 @@ def generate_mission():
         )
     ):
         raise ValueError("Invalid mission instructions.")
-
-    points = data.get("points")
 
     if (
         not isinstance(points, int)
@@ -175,22 +240,24 @@ def generate_mission():
     }
 
 
+# Homepage
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
+# Mission API
 @app.route("/api/mission", methods=["GET"])
 def mission():
     try:
-        return jsonify(generate_mission())
+        result = generate_mission()
+        return jsonify(result)
 
     except Exception:
-        app.logger.exception("Mission generation failed")
+        app.logger.exception("AI mission generation failed")
 
-        return jsonify({
-            "error": "Could not generate a mission. Please try again."
-        }), 503
+        # If AI fails, return a backup mission
+        return jsonify(fallback_mission())
 
 
 if __name__ == "__main__":
