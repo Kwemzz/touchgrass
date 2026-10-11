@@ -1,0 +1,407 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #F5F5E9;
+}
+
+#logo{
+    width: auto;
+    height: 35px;
+}
+
+#nav{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px 70px;
+}
+
+#local{
+    font-size: 13px;
+    border: 1px solid #E5E5D8;
+    padding: 12px;
+    border-radius: 50px;
+}
+
+.herodiv{
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    background-image: url("../images/bg.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding-bottom: 30px;
+}
+
+#herotext{
+    font-size: 16px;
+    padding-top: 30px;
+}
+
+#hero{
+    font-size: 70px;
+    padding: 10px 0;
+    color: #234B35;
+}
+
+#herop{
+    font-size: 18px;
+}
+
+#hero span {
+    font-size: 55px;
+    color: #6c8c55;
+}
+
+.maindiv{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 45px 0;
+}
+
+.adventure{
+    background-color: #ffffff;
+    width: 600px;
+    border-radius: 30px;
+    padding: 25px;
+}
+
+#top{
+    list-style-type: none;
+    display: flex;
+    flex-direction: row;
+    font-size: 12px;
+    justify-content: space-between;
+    padding-bottom: 15px;
+}
+
+h3{
+    font-size: 27px;
+    padding-bottom: 15px;
+    color: #234B35;
+}
+
+#points{
+    background-color: #647a5480;
+    width: 25%;
+    text-align: center;
+    padding: 5px;
+    border-radius: 50px;
+    margin-bottom: 15px;
+}
+
+#another{
+    background-color: #234B35;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 50px;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+
+h4{
+    padding: 30px 0;
+    text-align: center;
+    font-size: 22px;
+    color: #234B35;
+}
+
+.steps{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    gap: 20px;
+}
+
+.eachstep{
+    width: 160px;
+    text-align: center;
+}
+
+#middle{
+    border-left: 1px solid #E5E5D8;
+    border-right: 1px solid #E5E5D8;
+    padding: 0 20px;
+}
+
+.adventure #task{
+    list-style-position: inside;
+    padding-left: 0;
+    padding-bottom: 15px;
+}
+
+.stepname{
+    font-size: 20px;
+    color: #234B35;
+}
+
+.stepnumber{
+    font-weight: bold;
+}
+
+.pics{
+    width: auto;
+    height: 70px;
+}
+
+footer{
+    text-align: center;
+    padding: 20px 0;
+}
+
+.pic{
+    width: auto;
+    height: 20px;
+}
+
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#total-points {
+    background-color: #E7EDDF;
+    color: #234B35;
+    padding: 10px 15px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+#complete-mission {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #E7EDDF;
+    color: #234B35;
+    border: 1px solid #6C8C55;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#complete-mission:hover {
+    background-color: #D8E5CD;
+}
+
+#complete-mission:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+#completion-message {
+    text-align: center;
+    color: #234B35;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+@media screen and (max-width: 480px) {
+    .nav-right {
+        gap: 6px;
+    }
+
+    #total-points {
+        padding: 8px;
+        font-size: 11px;
+    }
+
+    #local {
+        font-size: 10px;
+        padding: 8px;
+    }
+}
+
+/* TABLETS */
+@media screen and (max-width: 768px) {
+
+    #nav {
+        padding: 15px 30px;
+    }
+
+    #hero {
+        font-size: 55px;
+    }
+
+   #hero span {
+    font-size: 55px;
+    color: #6c8c55;
+    }
+
+    #herotext {
+        font-size: 14px;
+    }
+
+    #herop {
+        font-size: 16px;
+        padding: 0 20px;
+    }
+
+    .maindiv {
+        padding: 35px 0;
+    }
+
+    .adventure {
+        width: min(550px, calc(100% - 40px));
+        padding: 25px;
+    }
+
+    .steps {
+        gap: 10px;
+    }
+
+    .eachstep {
+        width: 30%;
+    }
+
+    #middle {
+        padding: 0 12px;
+    }
+
+    .stepdetails {
+        font-size: 14px;
+    }
+}
+
+
+/* MOBILE PHONES */
+@media screen and (max-width: 480px) {
+
+    #nav {
+        padding: 15px 20px;
+        align-items: center;
+    }
+
+    #logo {
+        height: 28px;
+    }
+
+    #local {
+        font-size: 11px;
+        padding: 8px 10px;
+    }
+
+    .herodiv {
+        background-position: center;
+        padding-bottom: 25px;
+    }
+
+    #herotext {
+        font-size: 11px;
+        padding-top: 35px;
+    }
+
+    #hero {
+        font-size: 40px;
+        line-height: 1.15;
+        padding: 12px 10px;
+    }
+
+   #hero span {
+    font-size: 55px;
+    color: #6c8c55;
+    }
+
+    #herop {
+        font-size: 14px;
+        line-height: 1.6;
+        padding: 0 20px;
+    }
+
+    .maindiv {
+        padding: 25px 0;
+    }
+
+    .adventure {
+        width: calc(100% - 32px);
+        padding: 20px;
+        border-radius: 22px;
+    }
+
+    #top {
+        align-items: center;
+        gap: 10px;
+        font-size: 10px;
+    }
+
+    h3 {
+        font-size: 23px;
+    }
+
+    #task {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    #task li {
+        margin-bottom: 10px;
+    }
+
+    #points {
+        width: fit-content;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    #another {
+        padding: 14px 10px;
+    }
+
+    h4 {
+        font-size: 19px;
+        padding: 25px 0;
+    }
+
+    .steps {
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .eachstep {
+        width: 100%;
+        max-width: 260px;
+    }
+
+    #middle {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid #E5E5D8;
+        border-bottom: 1px solid #E5E5D8;
+        padding: 25px 0;
+    }
+
+    .pics {
+        height: 55px;
+    }
+
+    .stepname {
+        font-size: 19px;
+    }
+
+    .stepdetails {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    footer {
+        padding: 20px 15px;
+    }
+
+    #ai {
+        font-size: 13px;
+    }
+}

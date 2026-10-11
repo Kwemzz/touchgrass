@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Document</title>
+</head>
+<body>
+    <div class="everything">
+
+        <div class="herodiv">
+            <nav id="nav">
+                <a href="#">
+                    <img id="logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="TouchGrass logo">
+                </a>
+                <div class="nav-right">
+                    <p id="total-points">⭐ 0 pts</p>
+
+                    <p id="local">
+                        <img class="pic" src="{{ url_for('static', filename='images/circle.png') }}" alt="">
+                        LOCAL AI
+                    </p>
+                </div>
+            </nav>
+
+            <p id="herotext">LESS SCROLLING. MORE LIVING.</p>
+            <h1 id="hero">Your world is <br>waiting <span>outside.</span></h1>
+            <p id="herop">Let local AI give you a little adventure. <br> Then put your phone away and go find it.</p>
+        </div>
+
+        <div class="maindiv">
+
+            <div class="adventure">
+                <ul id="top">
+                    <li><img class="pic" src="{{ url_for('static', filename='images/sprout.png') }}" alt=""> YOUR NEXT ADVENTURE </li>
+                    <li id="mission-time">10 MIN</li>
+                </ul>
+
+                <h3 id="mission-title">Look for 3 different kinds of trees in your area.</h3>
+
+                <ol id="task">
+                    <li class="numbers">Find a tree with smooth bark and look closely at its texture.</li>
+                    <li class="numbers">Spot a tree with interesting leaves (shape, color or pattern).</li>
+                    <li class="numbers">Find a tree with visible roots or unique trunk features.</li>
+                </ol>
+
+                <p id="points">
+                    <img class="pic" src="{{ url_for('static', filename='images/star.png') }}" alt="">
+                    <span id="mission-points">25 points</span>
+                </p>
+
+                <button id="another">Find another mission </button>
+                <button id="complete-mission">
+                    I've completed this mission ✓
+                </button>
+
+                <p id="completion-message" role="status" aria-live="polite"></p>
+            </div>
+
+            <div class="idea">
+                <h4>THE IDEA IS SIMPLE</h4>
+
+                <div class="steps">
+                    <div class="eachstep">
+                        <img class="pics" src="{{ url_for('static', filename='images/brain.png') }}" alt="">
+                        <p class="stepnumber">01</p>
+                        <h3 class="stepname">Get a mission</h3>
+                        <p class="stepdetails">Local AI gives you a small adventure</p>
+                    </div>
+                    <div class="eachstep" id="middle">
+                        <img class="pics" src="{{ url_for('static', filename='images/trees.png') }}" alt="">
+                        <p class="stepnumber">02</p>
+                        <h3 class="stepname">Go outside</h3>
+                        <p class="stepdetails">Lock your phone and notice the world around you</p>
+                    </div>
+                    <div class="eachstep">
+                        <img class="pics" src="{{ url_for('static', filename='images/trophy.png') }}" alt="">
+                        <p class="stepnumber">03</p>
+                        <h3 class="stepname">Earn your points</h3>
+                        <p class="stepdetails">Come back when you're done and celebrate</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <footer>
+            <p id="ai">Made for the real world with open AI. <img class="pic" src="{{ url_for('static', filename='images/sprout.png') }}" alt=""></p>
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
