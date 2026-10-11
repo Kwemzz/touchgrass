@@ -82,7 +82,13 @@ def generate_with_openrouter():
         timeout=60
     )
 
-    response.raise_for_status()
+    if not response.ok:
+        app.logger.error(
+            "OpenRouter error %s: %s",
+            response.status_code,
+            response.text[:1000]
+        )
+        response.raise_for_status()
 
     result = response.json()
     return result["choices"][0]["message"]["content"]
