@@ -74,7 +74,7 @@ def generate_with_openrouter():
                 {"role": "user", "content": PROMPT}
             ],
             "temperature": 0.8,
-            "max_tokens": 500,
+            "max_tokens": 1200,
             "response_format": {
                 "type": "json_object"
             }
@@ -110,7 +110,17 @@ def generate_mission():
     content = re.sub(r"^```(?:json)?\s*", "", content)
     content = re.sub(r"\s*```$", "", content)
 
-    data = json.loads(content)
+    if not content:
+        raise ValueError("OpenRouter returned an empty AI response.")
+
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        app.logger.error(
+        "Invalid AI response: %s",
+        content[:500]
+    )
+    raise ValueError("The AI returned invalid JSON.")
 
     if not isinstance(data, dict):
         raise ValueError("Invalid AI response.")
