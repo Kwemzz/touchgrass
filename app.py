@@ -91,7 +91,17 @@ def generate_with_openrouter():
         response.raise_for_status()
 
     result = response.json()
-    return result["choices"][0]["message"]["content"]
+
+    message = result["choices"][0]["message"]
+
+    app.logger.warning(
+    "OpenRouter model: %s | finish_reason: %s | content: %r",
+    result.get("model"),
+    result["choices"][0].get("finish_reason"),
+    message.get("content")
+)
+
+    return message.get("content") or ""
 
 
 def generate_mission():
